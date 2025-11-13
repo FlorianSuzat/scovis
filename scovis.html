@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>SCOVIS: Scores Visualisation</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+		<link href="html_stuff/custom.css" rel="stylesheet">
+		<link href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap5.min.css" rel="stylesheet" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+		<script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js" crossorigin="anonymous"></script>
+		<script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.min.js" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" crossorigin="anonymous"></script>
+		<link src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous"></script>
+		<link href="html_stuff/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+		<div class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark">
+			<div class="container">
+					<a href="/" class="navbar-brand">SCOVIS: Scores Visualisation</a>
+						<div class="d-flex mb-0" style='width:500px;'>
+							<input id="score_file" class="form-control me-sm-2" type="text" placeholder="/path/to/data/file.json">
+							<button id="visualise" class="btn btn-secondary my-2 my-sm-0" type="submit">Visualise</button>
+						</div>
+			</div>
+		</div>
+		<div class="container">
+			<div class="page-header" id="banner">
+				<div id='display_values' class='row fixed-top bg-light d-none' style="padding: 15px;top: 50px; border-bottom:5px solid;">
+					<div class="col-sm-2">Term : <span id='term'></span></div>
+					<div class="col-sm-2">Vertco : <span id='lvl'></span></div>
+					<div class="col-sm-2">Mean : <span id='m'></span></div>
+					<div class="col-sm-2">Stdev : <span id='s'></span></div>
+					<div class="col-sm-2">n : <span id='n'></span></div>
+					<div class="col-sm-2">Count : <span id='c'></span></div>
+				</div>
+				<div id="content" style="margin-top: 125px;">
+				</div>
+			</div>
+		</div>
+
+		</div>
+
+	</body>
+	<script>
+		const toPrint=['lvl','term','m','s','n','c'];
+
+		const signifToClassTxt = {
+			"2": ["siA", '<i class="fa fa-minus"></i>' ],
+			"1": ["siB", '<i class="fa fa-minus-circle"></i>'],
+			"0": ["siN", '<i class="fa fa-square-o"></i>'],
+			"-1": ["siB", '<i class="fa fa-plus-circle"></i>'],
+			"-2": ["siA", '<i class="fa fa-plus"></i>'],
+		}
+
+		const signifToClassTxt3 = {
+			"3": ["siA", '<i class="fa fa-minus fa-2x"></i>'],
+			"2": ["siB", '<i class="fa fa-angle-double-down fa-lg"></i>'],
+			"1": ["siC", '<i class="fa fa-angle-down"></i>'],
+			"0": ["siN", '<i class="fa fa-square-o"></i>'],
+			"-1": ["siC", '<i class="fa fa-angle-up"></i>'],
+			"-2": ["siB", '<i class="fa fa-angle-double-up fa-lg"></i>'],
+			"-3": ["siA", '<i class="fa fa-plus fa-2x"></i>'],
+		}
+
+		const signifToClassTxt3Small = {
+			"3": ["siA", '<i class="fa fa-minus fa-sm"></i>'],
+			"2": ["siB", '<i class="fa fa-angle-double-down fa-xs"></i>'],
+			"1": ["siC", '<i class="fa fa-angle-down fa-xs"></i>'],
+			"0": ["siN", '<i class="fa fa-square-o fa-xs"></i>'],
+			"-1": ["siC", '<i class="fa fa-angle-up fa-xs"></i>'],
+			"-2": ["siB", '<i class="fa fa-angle-double-up fa-xs"></i>'],
+			"-3": ["siA", '<i class="fa fa-plus fa-sm"></i>'],
+		}   
+		function categoryDetails(cat){
+                        //lets do better later
+			return cat;
+		} 
+		function eToColorClass(e){
+			var note="";
+			if( e < -20){
+				note = "AA";
+			}else if( e < -15){
+				note = "CC";
+			}else if( e < -10){
+				note = "EE";
+			}else if( e < -5){
+				note = "GG";
+			}else if( e < -1){
+				note = "II";
+			}else if( e < 1){
+				note = "JJ";  
+			}else if( e < 5){
+				note = "KK";
+			}else if( e < 10){
+				note = "MM";
+			}else if( e < 15){
+				note = "OO";
+			}else if( e < 20){
+				note = "QQ";
+			}else{
+				note = "RR";
+			}
+			return note
+		}
+
+
+		function nToOpacity(n){
+			if(n < 3){
+				return 'style="opacity:0;"';
+			}else if( n < 10){
+				return 'style="opacity:0.5;"';
+			}else{
+				return "";
+			}
+		}
+
+
+		var meta={};
+		$("#visualise").click(function () {
+			loadJson($("#score_file").val());
+		});
+
+
+		function datatableScores(json){
+			console.log(json);
+			meta=json["metadata"];
+			var headerList=['Category',"Localisation","reference bias","scores bias","scores rmse"]
+			var header="";
+			$.each( headerList, function( idx , col) {
+				header+='<th scope="col">'+col+'</th>';
+			});
+			var scoreLines=[];
+			terms=["0","3","6","9","12","15","18","21","24"];
+			$.each( json["data"], function( k, v1 ) { 
+				$.each(v1,function( loc, v2 ) {
+					var fullBtnGroupB="";
+					var fullBtnGroupE="";
+					var fullBtnGroupR="";
+					var kv2Sorted=Object.keys(v2);
+					kv2Sorted.sort(function(a, b) {
+						return b - a;
+					});
+
+					$.each(kv2Sorted,function( ilvl, lvl ) {
+						var v3=v2[lvl];
+						var lvlBtnGroupB = "";
+						var lvlBtnGroupR = "";
+						var lvlBtnGroupE = "";
+						$.each(terms,function( iterm, term ) {
+							if (term in v3 ){
+								var v=v3[term];
+								var iB=signifToClassTxt3[v.b.c];
+								var iE=signifToClassTxt3[v.e.c];
+								var opacity = nToOpacity(parseFloat(v.n.a));
+								var eClass=eToColorClass(parseFloat(v.e.a));
+								lvlBtnGroupR+="<button "+opacity+" data-id='"+k+"' data-m='"+v.br.a+"' data-s='"+v.br.s+"' data-n='"+v.f.n+"' data-c='"+v.n.a+"' data-term='"+term+"' data-lvl='"+lvl+"' data-param='br' class='btn-xs printDatas bias'>°</button>";
+								lvlBtnGroupB+="<button "+opacity+" data-id='"+k+"' data-m='"+v.b.a+"' data-s='"+v.b.s+"' data-n='"+v.f.n+"' data-c='"+v.n.a+"' data-term='"+term+"' data-lvl='"+lvl+"' data-param='b' class='btn-xs printDatas bias "+iB[0]+"'>"+iB[1]+"</button>";
+								lvlBtnGroupE+="<button "+opacity+" data-id='"+k+"' data-m='"+v.e.a+"' data-s='"+v.e.s+"' data-n='"+v.e.n+"' data-c='"+v.n.a+"' data-term='"+term+"' data-lvl='"+lvl+"' class='btn-xs printDatas "+eClass+" "+iE[0]+"'>"+iE[1]+"</button>";
+							}else{
+								lvlBtnGroupR+="<button data-m='-' data-s='-' data-n='-' data-c='-' data-term='"+term+"' data-lvl='-'class='btn-xs btn-black printDatas'>0</button>";
+								lvlBtnGroupB+="<button data-m='-' data-s='-' data-n='-' data-c='-' data-term='"+term+"' data-lvl='-'class='btn-xs btn-black printDatas'>0</button>";
+								lvlBtnGroupE+="<button data-m='-' data-s='-' data-n='-' data-c='-' data-term='"+term+"' data-lvl='-'class='btn-xs btn-black printDatas'>0</button>";
+							}
+						});
+						fullBtnGroupB +="<div class='d-flex'>"+lvlBtnGroupB+"</div>";
+						fullBtnGroupR +="<div class='d-flex'>"+lvlBtnGroupR+"</div>";
+						fullBtnGroupE +="<div class='d-flex'>"+lvlBtnGroupE+"</div>";
+
+					});
+					scoreLines.push("<tr><th scope='row'>"+categoryDetails(k)+"</th><td>"+loc+"</td><td>"+fullBtnGroupR+"</td><td>"+fullBtnGroupB+"</td><td>"+fullBtnGroupE+"</td></tr>");
+				});
+			});
+			var body=scoreLines.join("");
+
+			var table = '<table id="table" class="table table-hover"><thead><tr>'+header+'</tr></thead><tbody>'+body+'</tbody></table>';
+
+			$("#content").html(table); 
+			finalise();
+		}
+
+
+		function loadJson(score_file){
+			console.log('loadJson '+ score_file);
+			$.getJSON("./"+score_file, function(json) {
+				datatableScores(json);
+			})
+                          .done(function() {
+                              console.log( "datatableScores done" );
+                          })
+                          .fail(function() {
+                              alert( score_file+' not found' );
+                         });
+
+		}
+		function finalise(){
+
+			var table=$('.table').DataTable({
+				"lengthMenu": [[-1], [ "All"]],
+				fixedHeader: true,
+				"language": {
+					"zeroRecords": "Nothing corresponding to request",
+					"search": "Filter",
+				} ,
+				"order": [[ 0, "asc" ]],
+				"search": {
+					"regex": true,
+				}
+			});
+			$('.filterClick').click(function () {
+				var filter = $(this).prop('value');
+				table.search( filter ).draw();
+			});
+			$( ".printDatas" ).on( "mouseover", function() {
+				var obj={};
+				for (const element of toPrint) {
+					obj[element]=$(this).attr('data-'+element);
+				}
+				displayInfo(obj);
+			} );
+
+			$(".bias").each(function() {
+				const m=$(this).attr('data-m');
+				const id=$(this).attr('data-id');
+				const param=$(this).attr('data-param');
+				const absMax=0.5*meta["borns"][id][param]["absMax"];
+				$(this).css("background-color", d3.interpolateRdBu(0.5-(m/(2*absMax))));
+
+			});
+                        $("#display_values").removeClass('d-none');
+		} 
+
+		function displayInfo(obj){
+			for (const element of toPrint) {
+				$("#"+element).text(obj[element]);
+			}
+
+		}
+
+	</script>
+</html>

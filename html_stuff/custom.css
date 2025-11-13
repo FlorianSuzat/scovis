@@ -1,0 +1,91 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+.btn-black{
+  background:#000;
+}
+
+.btn-xs{
+ width: 35px !important;
+ height: 35px !important;
+ border:1px solid #CCCCCC !important;
+}
+.btn-xxs{
+ width: 25px !important;
+ height: 25px !important;
+ border:0px solid #CCCCCC !important;
+}
+
+.AA{background-color: #0000ff;}
+.CC{background-color: #6666ff;}
+.EE{background-color: #9595ff;}
+.GG{background-color: #bbbbff;}
+.II{background-color: #ddddff;}
+.JJ{background-color: #ffffff;}
+.KK{background-color: #ffecec;}
+.MM{background-color: #ffcccc;}
+.OO{background-color: #ff9090;}
+.QQ{background-color: #ff5050;}
+.RR{background-color: #ff0000;}
+
+
+.siA{}
+.siB{border:10px solid #fefefe;}
+.siN{border:20px solid #fefefe;}
+
+.tab-content a {
+    color:#ff9e44;
+    
+}
+o5{
+ opacity:0.5;
+}
+.ca{
+    background-color:#A60008;
+    fill:#A60008;
+}
+.cb{
+    background-color:#B80009;
+    fill:#B80009;
+}
+.cc{
+    background-color:#c7a7a8;
+    fill:#c7a7a8;
+}
+.cd{
+    background-color:#eeeeee;
+    fill:#eeeeee;
+}
+.ce{
+    background-color:#AABFD6;
+    fill:#AABFD6;
+}
+.cf{
+    background-color:#2371C8;
+    fill:#2371C8;
+}
+.cg{
+    background-color:#025FC8;
+    fill:#025FC8;
+}
+.noData{
+    background-color:#000;
+    fill:#000;
+}
+
+.sa{
+    border:2px solid #fcfafc !important;
+}
+.sb{
+    border:2px solid #e5e4f0 !important;
+}
+.sc{
+    border:2px solid #a4a1cc !important;
+}
+.sd{
+    border:2px solid #705ca9 !important;
+}
+.se{
+    border:2px solid #3f007d !important;
+}
